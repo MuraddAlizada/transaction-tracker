@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Expense Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #060817;
+            --card: rgba(9, 12, 30, 0.92);
+            --primary: #8f65ff;
+            --primary-dark: #5f2ff5;
+            --secondary: #1cd6d2;
+            --accent: #f472b6;
+            --muted: #9ba5c9;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.2);
+            --shadow: 0 30px 60px rgba(5, 6, 15, 0.65);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(111, 76, 255, 0.35), transparent 45%),
+                        radial-gradient(circle at 80% 0%, rgba(28, 206, 200, 0.35), transparent 50%),
+                        linear-gradient(140deg, #03030a, #080a20 60%, #010101);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle at 25% 25%, rgba(124, 93, 255, 0.15), transparent 45%),
+                              radial-gradient(circle at 75% 10%, rgba(36, 193, 200, 0.14), transparent 40%),
+                              radial-gradient(circle at 60% 70%, rgba(255, 255, 255, 0.04), transparent 45%);
+            background-size: cover;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 520px;
+            height: 520px;
+            right: -120px;
+            top: -80px;
+            background: radial-gradient(circle, rgba(143, 101, 255, 0.35), transparent 70%);
+            filter: blur(120px);
+            opacity: 0.6;
+            z-index: -2;
+            animation: pulse 18s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+            100% { transform: translate(-60px, 30px) scale(1.15); opacity: 0.8; }
+        }
+
+        .bg-aurora {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .bg-aurora span {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(143, 101, 255, 0.35), transparent 60%);
+            filter: blur(60px);
+            animation: float 18s linear infinite;
+        }
+
+        .bg-aurora span:nth-child(1) { top: 5%; left: 8%; animation-duration: 22s; }
+        .bg-aurora span:nth-child(2) { top: 55%; left: 12%; animation-duration: 26s; background: radial-gradient(circle, rgba(28, 214, 210, 0.35), transparent 60%); }
+        .bg-aurora span:nth-child(3) { top: 28%; right: 18%; animation-duration: 24s; background: radial-gradient(circle, rgba(244, 114, 182, 0.25), transparent 60%); }
+        .bg-aurora span:nth-child(4) { bottom: 8%; right: 6%; animation-duration: 28s; }
+
+        @keyframes float {
+            0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.45; }
+            50% { transform: translate3d(25px, -25px, 0) scale(1.1); opacity: 0.8; }
+            100% { transform: translate3d(-15px, 25px, 0) scale(1); opacity: 0.45; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            backdrop-filter: blur(22px);
+            background:
+                linear-gradient(var(--card), var(--card)) padding-box,
+                linear-gradient(130deg, rgba(143, 101, 255, 0.5), rgba(28, 214, 210, 0.5)) border-box;
+            border-radius: 32px;
+            border: 2px solid transparent;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+            background: radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.04), transparent 55%);
+            opacity: 0.5;
+        }
+
+        .header {
+            padding: 52px 40px 36px;
+            text-align: center;
+            background: linear-gradient(145deg, rgba(143, 101, 255, 0.25), rgba(28, 214, 210, 0.2));
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .header h1 span {
+            background: linear-gradient(110deg, #f472b6, #c084fc, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        .header h1 span::after {
+            content: '';
+            position: absolute;
+            left: -4px;
+            right: -4px;
+            bottom: -8px;
+            height: 8px;
+            background: linear-gradient(90deg, rgba(143, 101, 255, 0), rgba(143, 101, 255, 0.4), rgba(60, 223, 210, 0));
+            filter: blur(10px);
+        }
+
+        .header p {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 22px;
+            padding: 24px 40px 40px;
+            margin-top: 10px;
+        }
+
+        .stat-card {
+            position: relative;
+            padding: 24px;
+            border-radius: 18px;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.02);
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            will-change: transform;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            top: -32px;
+            right: -32px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 70%);
+            opacity: 0.25;
+            transition: opacity 0.25s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 30px 45px rgba(5, 6, 15, 0.6), inset 0 0 45px rgba(255, 255, 255, 0.05);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+        }
+
+        .stat-card:hover::before {
+            opacity: 0.45;
+        }
+
+        .stat-card__label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .stat-card small {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.75rem;
+            text-transform: none;
+            letter-spacing: 0.04em;
+            color: rgba(226, 232, 240, 0.6);
+        }
+
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            backdrop-filter: blur(6px);
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card.stat-income .stat-icon {
+            background: rgba(74, 222, 128, 0.15);
+            color: #22c55e;
+        }
+
+        .stat-card.stat-expense .stat-icon {
+            background: rgba(251, 113, 133, 0.15);
+            color: #fb7185;
+        }
+
+        .stat-card.stat-balance .stat-icon {
+            background: rgba(45, 212, 191, 0.15);
+            color: #14b8a6;
+        }
+
+        .stat-card.stat-count .stat-icon {
+            background: rgba(250, 204, 21, 0.15);
+            color: #facc15;
+        }
+
+        .stat-card__body {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .stat-value span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--muted);
+            margin-left: 6px;
+            align-self: flex-end;
+        }
+
+        .stat-value.income {
+            color: #4ade80;
+        }
+
+        .stat-value.expense {
+            color: #fb7185;
+        }
+
+        .stat-value.balance {
+            color: #2dd4bf;
+        }
+
+        .stat-value.count {
+            color: #fcd34d;
+        }
+
+        .main-content {
+            padding: 44px;
+            background: rgba(1, 5, 15, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 1.45rem;
+            letter-spacing: 0.03em;
+            color: #f8fafc;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 48px;
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(120deg, rgba(143, 101, 255, 0.2), rgba(28, 214, 210, 0.2));
+            box-shadow: 0 0 25px rgba(28, 214, 210, 0.4);
+        }
+
+        .form-container {
+            background: rgba(10, 15, 35, 0.9);
+            border-radius: 28px;
+            padding: 36px;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: none;
+        }
+
+        .form-container::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(143, 101, 255, 0.18), transparent 65%);
+            bottom: -80px;
+            right: -60px;
+            filter: blur(60px);
+            opacity: 0.6;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            background: rgba(5, 9, 25, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            color: #f8fafc;
+            font-size: 1rem;
+            transition: border 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(124, 93, 255, 0.8);
+            box-shadow: 0 0 0 4px rgba(124, 93, 255, 0.18);
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .button {
+            border: none;
+            padding: 15px 32px;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            color: white;
+            background: linear-gradient(120deg, var(--primary-dark), var(--secondary));
+            box-shadow: 0 20px 35px rgba(15, 23, 42, 0.55);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 40px rgba(124, 93, 255, 0.35);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: rgba(120, 134, 173, 0.25);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .form-actions .button {
+            flex: 0 0 auto;
+        }
+
+        .form-actions .button.secondary {
+            color: #e2e8f0;
+        }
+
+        .transaction-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .transaction-filters select {
+            min-width: 160px;
+            background: rgba(9, 12, 30, 0.9);
+        }
+
+        .transaction-list {
+            border-radius: 28px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.015);
+            position: relative;
+            background: linear-gradient(180deg, rgba(3, 7, 18, 0.95), rgba(3, 7, 18, 0.8));
+        }
+
+        .transaction-list::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+            pointer-events: none;
+        }
+
+        .transaction-item {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, minmax(120px, auto));
+            gap: 24px;
+            padding: 22px;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(4, 7, 16, 0.35);
+            transition: transform 0.2s ease, background 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .transaction-item::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            width: 4px;
+            height: 68%;
+            transform: translateY(-50%);
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(143, 101, 255, 0.65), rgba(28, 214, 210, 0.4));
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .transaction-item:hover {
+            transform: translateX(6px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .transaction-item:hover::before {
+            opacity: 1;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+
+        .transaction-info p {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .transaction-info small {
+            display: block;
+            margin-top: 8px;
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        .transaction-category {
+            justify-self: center;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            background: rgba(143, 101, 255, 0.12);
+            border: 1px solid rgba(143, 101, 255, 0.35);
+        }
+
+        .transaction-amount {
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .transaction-amount.income {
+            color: #4ade80;
+        }
+
+        .transaction-amount.expense {
+            color: #fb7185;
+        }
+
+        .transaction-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-small:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .loading {
+            padding: 40px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .error, .success {
+            padding: 16px 18px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: rgba(248, 113, 113, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fecaca;
+        }
+
+        .success {
+            background: rgba(34, 197, 94, 0.08);
+            border-color: rgba(34, 197, 94, 0.35);
+            color: #bbf7d0;
+        }
+
+        @media (max-width: 900px) {
+            .transaction-item {
+                grid-template-columns: 1fr;
+                text-align: left;
+            }
+
+            .transaction-category,
+            .transaction-amount,
+            .transaction-actions {
+                justify-self: flex-start;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            .container {
+                border-radius: 20px;
+            }
+
+            .main-content {
+                padding: 28px 22px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-aurora">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // API Base URL
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Transaction Categories
+        const INCOME_CATEGORIES = [
+            'salary', 'freelance', 'business', 'investment', 'other_income'
+        ];
+
+        const EXPENSE_CATEGORIES = [
+            'food', 'housing', 'transportation', 'utilities', 'healthcare',
+            'entertainment', 'shopping', 'education', 'other_expense'
+        ];
+
+        // API Service
+        const api = {
+            async request(endpoint, options = {}) {
+                const url = `${API_BASE}${endpoint}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Idempotency-Key': Math.random().toString(36).substr(2, 9),
+                        ...options.headers,
+                    },
+                    ...options,
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || error.title || 'An error occurred');
+                }
+
+                return await response.json();
+            },
+
+            getTransactions(query = {}) {
+                const params = new URLSearchParams(query);
+                return this.request(`/transactions?${params}`);
+            },
+
+            getStats() {
+                return this.request('/transactions/stats');
+            },
+
+            createTransaction(data) {
+                return this.request('/transactions', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
+            },
+
+            updateTransaction(id, data) {
+                return this.request(`/transactions/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
+            },
+
+            deleteTransaction(id) {
+                return this.request(`/transactions/${id}`, {
+                    method: 'DELETE',
+                });
+            },
+        };
+
+        // Main App Component
+        function App() {
+            const [transactions, setTransactions] = useState([]);
+            const [stats, setStats] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [success, setSuccess] = useState(null);
+            const [filters, setFilters] = useState({
+                type: '',
+                category: '',
+                sortBy: 'createdAt',
+                sortOrder: 'desc',
+            });
+
+            const [formData, setFormData] = useState({
+                title: '',
+                description: '',
+                amount: '',
+                type: 'expense',
+                category: 'food',
+            });
+
+            const [editingId, setEditingId] = useState(null);
+
+            // Load data
+            const loadData = async () => {
+                try {
+                    setLoading(true);
+                    const [transactionResponse, statsResponse] = await Promise.all([
+                        api.getTransactions(filters),
+                        api.getStats(),
+                    ]);
+
+                    setTransactions(transactionResponse.data || []);
+                    setStats(statsResponse.data);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => {
+                loadData();
+            }, [filters]);
+
+            // Handle form submission
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    const data = {
+                        ...formData,
+                        amount: parseFloat(formData.amount),
+                    };
+
+                    if (editingId) {
+                        await api.updateTransaction(editingId, data);
+                        setSuccess('Transaction updated successfully');
+                    } else {
+                        await api.createTransaction(data);
+                        setSuccess('Transaction created successfully');
+                    }
+
+                    setFormData({
+                        title: '',
+                        description: '',
+                        amount: '',
+                        type: 'expense',
+                        category: 'food',
+                    });
+                    setEditingId(null);
+                    loadData();
+                } catch (err) {
+                    setError(err.message);
+                }
+            };
+
+            // Handle edit
+            const handleEdit = (transaction) => {
+                setFormData({
+                    title: transaction.title,
+                    description: transaction.description || '',
+                    amount: transaction.amount.toString(),
+                    type: transaction.type,
+                    category: transaction.category,
+                });
+                setEditingId(transaction.id);
+            };
+
+            // Handle delete
+            const handleDelete = async (id) => {
+                if (confirm('Are you sure you want to delete this transaction?')) {
+                    try {
+                        await api.deleteTransaction(id);
+                        setSuccess('Transaction deleted successfully');
+                        loadData();
+                    } catch (err) {
+                        setError(err.message);
+                    }
+                }
+            };
+
+            // Clear messages
+            useEffect(() => {
+                if (error || success) {
+                    const timer = setTimeout(() => {
+                        setError(null);
+                        setSuccess(null);
+                    }, 5000);
+                    return () => clearTimeout(timer);
+                }
+            }, [error, success]);
+
+            const categories = formData.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>💰 <span>Income & Expense</span> Tracker</h1>
+                        <p>Manage your finances with ease</p>
+                    </div>
+
+                    {stats && (
+                        <div className="stats">
+                            <div className="stat-card stat-income">
+                                <div className="stat-card__label">
+                                    <span className="stat-icon">⬈</span>
+                                    <div>
+                                        <h3>Total Income</h3>
+                                        <small>Monthly inflow</small>
+                                    </div>
+                                </div>
+                                <div className="stat-card__body">
+                                    <div className="stat-value income">
+                                        ${stats.totalIncome.toFixed(2)}
+                                    </div>
+                                    <span>USD</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-expense">
+                                <div className="stat-card__label">
+                                    <span className="stat-icon">⬊</span>
+                                    <div>
+                                        <h3>Total Expenses</h3>
+                                        <small>Tracked spending</small>
+                                    </div>
+                                </div>
+                                <div className="stat-card__body">
+                                    <div className="stat-value expense">
+                                        ${stats.totalExpenses.toFixed(2)}
+                                    </div>
+                                    <span>USD</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-balance">
+                                <div className="stat-card__label">
+                                    <span className="stat-icon">◎</span>
+                                    <div>
+                                        <h3>Balance</h3>
+                                        <small>Income − expense</small>
+                                    </div>
+                                </div>
+                                <div className="stat-card__body">
+                                    <div className={`stat-value ${stats.balance >= 0 ? 'income' : 'expense'}`}>
+                                        ${stats.balance.toFixed(2)}
+                                    </div>
+                                    <span>USD</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-count">
+                                <div className="stat-card__label">
+                                    <span className="stat-icon">∑</span>
+                                    <div>
+                                        <h3>Transactions</h3>
+                                        <small>Total records</small>
+                                    </div>
+                                </div>
+                                <div className="stat-card__body">
+                                    <div className="stat-value count">
+                                        {stats.transactionCount}
+                                    </div>
+                                    <span>items</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="main-content">
+                        {error && <div className="error">{error}</div>}
+                        {success && <div className="success">{success}</div>}
+
+                        <div className="section">
+                            <h2 className="section-title">
+                                {editingId ? 'Edit Transaction' : 'Add New Transaction'}
+                            </h2>
+                            
+                            <div className="form-container">
+                                <form onSubmit={handleSubmit}>
+                                    <div className="form-grid">
+                                        <div className="form-group">
+                                            <label>Title</label>
+                                            <input
+                                                type="text"
+                                                value={formData.title}
+                                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                placeholder="e.g. Freelance payout"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Amount</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0.01"
+                                                value={formData.amount}
+                                                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                                                placeholder="500"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Type</label>
+                                            <select
+                                                value={formData.type}
+                                                onChange={(e) => setFormData({ 
+                                                    ...formData, 
+                                                    type: e.target.value,
+                                                    category: e.target.value === 'income' ? 'salary' : 'food'
+                                                })}
+                                            >
+                                                <option value="income">Income</option>
+                                                <option value="expense">Expense</option>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Category</label>
+                                            <select
+                                                value={formData.category}
+                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            >
+                                                {categories.map(cat => (
+                                                    <option key={cat} value={cat}>
+                                                        {cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Description (Optional)</label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            placeholder="Add a note for future you..."
+                                        />
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" className="button">
+                                            {editingId ? 'Save Changes' : 'Add Transaction'}
+                                        </button>
+                                        {editingId && (
+                                            <button 
+                                                type="button" 
+                                                className="button secondary"
+                                                onClick={() => {
+                                                    setEditingId(null);
+                                                    setFormData({
+                                                        title: '',
+                                                        description: '',
+                                                        amount: '',
+                                                        type: 'expense',
+                                                        category: 'food',
+                                                    });
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div className="section">
+                            <h2 className="section-title">Transactions</h2>
+                            
+                            <div className="transaction-filters">
+                                <select
+                                    value={filters.type}
+                                    onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                                >
+                                    <option value="">All Types</option>
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                </select>
+                                
+                                <select
+                                    value={filters.category}
+                                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                                >
+                                    <option value="">All Categories</option>
+                                    {[...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].map(cat => (
+                                        <option key={cat} value={cat}>
+                                            {cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                        </option>
+                                    ))}
+                                </select>
+                                
+                                <select
+                                    value={filters.sortBy}
+                                    onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                                >
+                                    <option value="createdAt">Date</option>
+                                    <option value="amount">Amount</option>
+                                    <option value="title">Title</option>
+                                </select>
+                                
+                                <select
+                                    value={filters.sortOrder}
+                                    onChange={(e) => setFilters({ ...filters, sortOrder: e.target.value })}
+                                >
+                                    <option value="desc">Descending</option>
+                                    <option value="asc">Ascending</option>
+                                </select>
+                            </div>
+
+                            {loading ? (
+                                <div className="loading">Loading transactions...</div>
+                            ) : (
+                                <div className="transaction-list">
+                                    {transactions.length === 0 ? (
+                                        <div className="loading">No transactions found</div>
+                                    ) : (
+                                        transactions.map(transaction => (
+                                            <div key={transaction.id} className="transaction-item">
+                                                <div className="transaction-info">
+                                                    <h4>{transaction.title}</h4>
+                                                    <p>{transaction.description}</p>
+                                                    <small>{new Date(transaction.createdAt).toLocaleDateString()}</small>
+                                                </div>
+                                                <div className="transaction-category">
+                                                    {transaction.category.replace('_', ' ')}
+                                                </div>
+                                                <div className={`transaction-amount ${transaction.type}`}>
+                                                    {transaction.type === 'income' ? '+' : '-'}
+                                                    ${transaction.amount.toFixed(2)}
+                                                </div>
+                                                <div className="transaction-actions">
+                                                    <button 
+                                                        className="btn-small"
+                                                        onClick={() => handleEdit(transaction)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        className="btn-small"
+                                                        onClick={() => handleDelete(transaction.id)}
+                                                        style={{color: '#ef4444'}}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
